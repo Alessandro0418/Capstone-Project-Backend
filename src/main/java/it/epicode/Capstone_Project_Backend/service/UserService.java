@@ -5,6 +5,7 @@ import it.epicode.Capstone_Project_Backend.model.User;
 import it.epicode.Capstone_Project_Backend.enumeration.Role;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,5 +32,24 @@ public class UserService {
 
     public Optional<User> findByUsername(String username) {
         return utenteRepository.findByUsername(username);
+    }
+
+    public User updateUser(String username, User updatedData) {
+        User user = utenteRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User non trovato"));
+
+        // Aggiorna solo i campi consentiti
+        user.setName(updatedData.getName());
+        user.setCognome(updatedData.getCognome());
+        user.setAvatar(updatedData.getAvatar());
+
+        return utenteRepository.save(user);
+    }
+
+    public void deleteUser(String username) {
+        User user = utenteRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User non trovato"));
+
+        utenteRepository.delete(user);
     }
 }
