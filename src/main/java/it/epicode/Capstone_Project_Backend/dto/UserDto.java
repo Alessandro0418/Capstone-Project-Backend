@@ -31,6 +31,5 @@ public class UserDto {
 
     private String avatar;
 
-    @NotEmpty(message = "È necessario assegnare almeno un ruolo")
     private Set<Role> ruoli;
 }

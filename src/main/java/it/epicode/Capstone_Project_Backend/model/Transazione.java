@@ -1,9 +1,6 @@
 package it.epicode.Capstone_Project_Backend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,9 +16,15 @@ import java.time.LocalDate;
 @Builder
 @Table(name = "transazioni")
 public class Transazione {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String descrizione;
+
     private BigDecimal importo;
+
     private LocalDate data;
 
     @ManyToOne
