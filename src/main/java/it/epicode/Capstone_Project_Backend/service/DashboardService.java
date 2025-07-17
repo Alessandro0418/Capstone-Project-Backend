@@ -1,5 +1,7 @@
 package it.epicode.Capstone_Project_Backend.service;
 
+import it.epicode.Capstone_Project_Backend.dto.CategoryTotalDTO;
+import it.epicode.Capstone_Project_Backend.enumeration.IsExpense;
 import it.epicode.Capstone_Project_Backend.model.Transazione;
 import it.epicode.Capstone_Project_Backend.model.User;
 import it.epicode.Capstone_Project_Backend.repository.TransazioneRepository;
@@ -29,18 +31,19 @@ public class DashboardService {
         List<Transazione> transazioni = transazioneRepository
                 .findByUtenteAndDataBetween(user, inizioMese, fineMese);
 
-        BigDecimal entrate = transazioni.stream()
-                .filter(t -> t.getImporto().compareTo(BigDecimal.ZERO) > 0)
-                .map(Transazione::getImporto)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal entrate = BigDecimal.ZERO;
+        BigDecimal uscite = BigDecimal.ZERO;
+        BigDecimal saldo = BigDecimal.ZERO;
 
-        BigDecimal uscite = transazioni.stream()
-                .filter(t -> t.getImporto().compareTo(BigDecimal.ZERO) < 0)
-                .map(Transazione::getImporto)
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .abs();
+        for (Transazione t : transazioni) {
+            if (t.getExpenses() != null && t.getExpenses().contains(IsExpense.INCOME)) {
+                entrate = entrate.add(t.getImporto());
+            } else if (t.getExpenses() != null && t.getExpenses().contains(IsExpense.EXPENSE)) {
+                uscite = uscite.add(t.getImporto());
+            }
+        }
 
-        BigDecimal saldo = entrate.subtract(uscite);
+        saldo = entrate.subtract(uscite);
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("mese", inizioMese.getMonth().toString());
@@ -52,30 +55,15 @@ public class DashboardService {
         return response;
     }
 
-    public List<Map<String, Object>> getTotaliPerCategoria(String username, int mese, int anno) {
+    public List<CategoryTotalDTO> getTotaliPerCategoria(String username, int mese, int anno) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Utente non trovato"));
 
-        LocalDate inizioMese = LocalDate.of(anno, mese, 1);
-        LocalDate fineMese = inizioMese.withDayOfMonth(inizioMese.lengthOfMonth());
-
-        List<Transazione> transazioni = transazioneRepository
-                .findByUtenteAndDataBetween(user, inizioMese, fineMese);
-
-        return transazioni.stream()
-                .collect(Collectors.groupingBy(
-                        t -> t.getCategoria().getName(),
-                        Collectors.mapping(Transazione::getImporto,
-                                Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))
-                ))
-                .entrySet()
-                .stream()
-                .map(entry -> {
-                    Map<String, Object> mappa = new HashMap<>();
-                    mappa.put("categoria", entry.getKey());
-                    mappa.put("totale", entry.getValue());
-                    return mappa;
-                })
-                .collect(Collectors.toList());
+        return transazioneRepository.findTotalsByCategoryAndMonthAndYearForExpenses(
+                user.getId(),
+                mese,
+                anno,
+                IsExpense.EXPENSE
+        );
     }
 }

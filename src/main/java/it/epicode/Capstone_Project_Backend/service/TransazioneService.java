@@ -8,11 +8,14 @@ import it.epicode.Capstone_Project_Backend.repository.CategoriaRepository;
 import it.epicode.Capstone_Project_Backend.repository.TransazioneRepository;
 import it.epicode.Capstone_Project_Backend.repository.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import it.epicode.Capstone_Project_Backend.enumeration.IsExpense;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +41,12 @@ public class TransazioneService {
                 .utente(utente)
                 .build();
 
+        if (dto.getExpenses() != null) {
+            transazione.setExpenses(dto.getExpenses());
+        } else {
+            transazione.setExpenses(new HashSet<>());
+        }
+
         return transazioneRepository.save(transazione);
     }
 
@@ -62,6 +71,12 @@ public class TransazioneService {
         t.setImporto(dto.getImporto());
         t.setData(dto.getData());
         t.setCategoria(categoria);
+
+        if (dto.getExpenses() != null) {
+            t.setExpenses(dto.getExpenses());
+        } else {
+            t.setExpenses(new HashSet<>());
+        }
 
         return transazioneRepository.save(t);
     }
