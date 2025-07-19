@@ -1,5 +1,6 @@
 package it.epicode.Capstone_Project_Backend.security;
 
+import io.jsonwebtoken.JwtException;
 import it.epicode.Capstone_Project_Backend.exeption.TokenExpiredExeption;
 import it.epicode.Capstone_Project_Backend.service.UtenteDetailsService;
 import jakarta.servlet.FilterChain;
@@ -30,10 +31,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        if (path.startsWith("/auth")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+//        if (path.startsWith("/auth")) {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
 
         String authHeader = request.getHeader("Authorization");
         String token = null;
@@ -44,8 +45,13 @@ public class JwtFilter extends OncePerRequestFilter {
             try {
                 username = jwtUtil.extractUsername(token);
             } catch (TokenExpiredExeption e) {
-
-                throw e;
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token scaduto");
+                return;
+            } catch (JwtException | IllegalArgumentException e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token non valido");
+                return;
             }
         }
 

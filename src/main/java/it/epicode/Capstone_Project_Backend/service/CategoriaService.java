@@ -6,6 +6,7 @@ import it.epicode.Capstone_Project_Backend.model.User;
 import it.epicode.Capstone_Project_Backend.repository.CategoriaRepository;
 import it.epicode.Capstone_Project_Backend.repository.UserRepository;
 import org.springframework.security.core.Authentication;
+import it.epicode.Capstone_Project_Backend.repository.TransazioneRepository;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +19,7 @@ public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
     private final UserRepository userRepository;
+    private final TransazioneRepository transazioneRepository;
 
     public Categoria creaCategoria(CategoriaDto dto, Authentication authentication) {
         User utente = userRepository.findByUsername(authentication.getName()).orElseThrow();
@@ -52,7 +54,12 @@ public class CategoriaService {
     public void eliminaCategoria(Long id, Authentication authentication) {
         Categoria categoria = getCategoriaById(id, authentication)
                 .orElseThrow(() -> new RuntimeException("Categoria non trovata"));
-
+        long numeroTransazioniAssociate = transazioneRepository.countByCategoria(categoria);
+        if (numeroTransazioniAssociate > 0) {
+            throw new IllegalStateException("Impossibile eliminare la categoria '" + categoria.getName() +
+                    "' perché ci sono " + numeroTransazioniAssociate + " transazioni ad essa associate. " +
+                    "Rimuovi prima le transazioni.");
+        }
         categoriaRepository.delete(categoria);
     }
 }

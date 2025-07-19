@@ -7,6 +7,7 @@ import it.epicode.Capstone_Project_Backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import it.epicode.Capstone_Project_Backend.model.Categoria;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -29,4 +30,6 @@ public interface TransazioneRepository extends JpaRepository<Transazione, Long> 
             @Param("month") int month,
             @Param("year") int year,
             IsExpense expenseType);
+
+    long countByCategoria(Categoria categoria);
 }
