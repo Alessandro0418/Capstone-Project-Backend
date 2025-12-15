@@ -32,5 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
-# Environment files
-Capstone-Project-Backend/env.properties
+# Environment / secrets
+env.properties
+*.env
+*.properties.local
