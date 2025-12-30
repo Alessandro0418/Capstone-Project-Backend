@@ -27,6 +27,8 @@ public class Transazione {
 
     private String descrizione;
 
+    private String icona;
+
     private BigDecimal importo;
 
     private LocalDate data;

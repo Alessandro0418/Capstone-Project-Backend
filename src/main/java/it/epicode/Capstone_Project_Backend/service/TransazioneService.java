@@ -35,6 +35,7 @@ public class TransazioneService {
 
         Transazione transazione = Transazione.builder()
                 .descrizione(dto.getDescrizione())
+                .icona(dto.getIcona())
                 .importo(dto.getImporto())
                 .data(dto.getData())
                 .categoria(categoria)
@@ -68,6 +69,7 @@ public class TransazioneService {
                 .orElseThrow(() -> new RuntimeException("Categoria non trovata"));
 
         t.setDescrizione(dto.getDescrizione());
+        t.setIcona(dto.getIcona());
         t.setImporto(dto.getImporto());
         t.setData(dto.getData());
         t.setCategoria(categoria);

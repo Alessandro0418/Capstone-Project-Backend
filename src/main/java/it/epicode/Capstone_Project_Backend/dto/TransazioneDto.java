@@ -17,6 +17,8 @@ public class TransazioneDto {
     @NotBlank
     private String descrizione;
 
+    private String icona;
+
     @NotNull
     @DecimalMin(value = "0.01", message = "L'importo deve essere maggiore di zero")
     private BigDecimal importo;
