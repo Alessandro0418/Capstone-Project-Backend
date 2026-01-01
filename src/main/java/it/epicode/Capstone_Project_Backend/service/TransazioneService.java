@@ -1,6 +1,7 @@
 package it.epicode.Capstone_Project_Backend.service;
 
 import it.epicode.Capstone_Project_Backend.dto.TransazioneDto;
+import it.epicode.Capstone_Project_Backend.enumeration.TipoNotifica;
 import it.epicode.Capstone_Project_Backend.model.Categoria;
 import it.epicode.Capstone_Project_Backend.model.Transazione;
 import it.epicode.Capstone_Project_Backend.model.User;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,6 +27,7 @@ public class TransazioneService {
     private final TransazioneRepository transazioneRepository;
     private final UserRepository userRepository;
     private final CategoriaRepository categoriaRepository;
+    private final NotificaService notificaService;
 
     public Transazione createTransazione(String username, TransazioneDto dto) {
         User utente = userRepository.findByUsername(username)
@@ -48,7 +51,36 @@ public class TransazioneService {
             transazione.setExpenses(new HashSet<>());
         }
 
-        return transazioneRepository.save(transazione);
+        Transazione saved = transazioneRepository.save(transazione);
+
+        try {
+            boolean isExpense = saved.getExpenses().contains(IsExpense.EXPENSE);
+            boolean isIncome = saved.getExpenses().contains(IsExpense.INCOME);
+
+            if (isIncome) {
+                notificaService.creaNotifica(
+                        utente,
+                        "Entrata Registrata",
+                        "Ottimo! Hai ricevuto un accredito di " + saved.getImporto() + "€ per: " + saved.getDescrizione(),
+                        TipoNotifica.INFO,
+                        saved.getId()
+                );
+            } else if (isExpense) {
+                if (saved.getImporto().compareTo(new BigDecimal("500")) >= 0) {
+                    notificaService.creaNotifica(
+                            utente,
+                            "Spesa Consistente",
+                            "Attenzione: hai registrato una spesa elevata di " + saved.getImporto() + "€.",
+                            TipoNotifica.AVVISO,
+                            saved.getId()
+                    );
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Errore durante la creazione della notifica: " + e.getMessage());
+        }
+
+        return saved;
     }
 
     public List<Transazione> getAllForUser(String username) {
