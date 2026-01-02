@@ -26,6 +26,8 @@ public class TransazioneDto {
     @NotNull
     private LocalDate data;
 
+    private boolean ricorrente;
+
     @NotNull
     private Long categoriaId;
 

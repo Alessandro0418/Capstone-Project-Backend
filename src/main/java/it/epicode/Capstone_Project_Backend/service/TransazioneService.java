@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.HashSet;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -43,6 +42,7 @@ public class TransazioneService {
                 .data(dto.getData())
                 .categoria(categoria)
                 .utente(utente)
+                .ricorrente(dto.isRicorrente())
                 .build();
 
         if (dto.getExpenses() != null) {
@@ -60,22 +60,35 @@ public class TransazioneService {
             if (isIncome) {
                 notificaService.creaNotifica(
                         utente,
-                        "Entrata Registrata",
-                        "Ottimo! Hai ricevuto un accredito di " + saved.getImporto() + "€ per: " + saved.getDescrizione(),
+                        "Income Received",
+                        "Nice! You’ve received a credit of " + saved.getImporto() + "€ for: " + saved.getDescrizione(),
                         TipoNotifica.INFO,
                         saved.getId()
                 );
-            } else if (isExpense) {
+            }
+
+            else if (isExpense) {
                 if (saved.getImporto().compareTo(new BigDecimal("500")) >= 0) {
                     notificaService.creaNotifica(
                             utente,
-                            "Spesa Consistente",
-                            "Attenzione: hai registrato una spesa elevata di " + saved.getImporto() + "€.",
+                            "Large Expense",
+                            "Heads up: you’ve recorded a high expense of " + saved.getImporto() + "€.",
                             TipoNotifica.AVVISO,
                             saved.getId()
                     );
                 }
             }
+
+            if (saved.isRicorrente()) {
+                notificaService.creaNotifica(
+                        utente,
+                        "Scheduled Deadline",
+                        "The transaction '" + saved.getDescrizione() + "' has been marked as recurring and will be monitored.",
+                        TipoNotifica.SCADENZA,
+                        saved.getId()
+                );
+            }
+
         } catch (Exception e) {
             System.err.println("Errore durante la creazione della notifica: " + e.getMessage());
         }
@@ -105,6 +118,7 @@ public class TransazioneService {
         t.setImporto(dto.getImporto());
         t.setData(dto.getData());
         t.setCategoria(categoria);
+        t.setRicorrente(dto.isRicorrente());
 
         if (dto.getExpenses() != null) {
             t.setExpenses(dto.getExpenses());

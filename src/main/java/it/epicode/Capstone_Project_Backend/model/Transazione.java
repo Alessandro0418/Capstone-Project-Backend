@@ -33,6 +33,9 @@ public class Transazione {
 
     private LocalDate data;
 
+    @Column(nullable = false)
+    private boolean ricorrente = false;
+
     @ManyToOne
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
