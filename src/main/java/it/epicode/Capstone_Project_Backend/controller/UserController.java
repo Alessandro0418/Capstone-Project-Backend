@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/users")
@@ -29,5 +30,13 @@ public class UserController {
         String username = authentication.getName(); // Ottiene username dall'utente loggato
         userService.deleteUser(username);
         return ResponseEntity.noContent().build();
+    }
+
+    // POST /users/me/avatar – Caricamento immagine profilo
+    @PostMapping("/me/avatar")
+    public ResponseEntity<User> uploadAvatar(@RequestParam("file") MultipartFile file, Authentication authentication) {
+        String username = authentication.getName();
+        User updatedUser = userService.uploadAvatar(username, file);
+        return ResponseEntity.ok(updatedUser);
     }
 }
